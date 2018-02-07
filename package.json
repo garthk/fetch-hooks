@@ -1,0 +1,25 @@
+{
+  "name": "fetch-hooks",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "lab -v -S"
+  },
+  "keywords": [],
+  "author": "Garth Kidd <garth@garthk.com>",
+  "license": "MIT",
+  "dependencies": {
+    "debug": "^3.1.0",
+    "joi": "^13.1.2",
+    "mime": "^2.2.0",
+    "node-fetch": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^9.4.2",
+    "code": "^5.1.2",
+    "lab": "^15.2.1",
+    "nock": "^9.1.6",
+    "typescript": "^2.8.0-dev.20180208"
+  }
+}

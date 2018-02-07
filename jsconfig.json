@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "checkJs": true,
+    "module": "commonjs",
+    "target": "es2017",
+    "typeRoots": ["./typings", "./node_modules/@types"]
+  },
+  "typeAcquisition": {
+    "enable": false
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
