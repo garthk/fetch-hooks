@@ -5,7 +5,7 @@ const { expect } = require('code');
 
 const FetchHookManager = require('../lib');
 
-experiment('with no hooks and null upstream', () => {
+experiment('with no hooks and no upstream', () => {
     test('await fetch leads to rejection', async () => {
         const { fetch } = new FetchHookManager({ upstream: null });
 
