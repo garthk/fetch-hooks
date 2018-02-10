@@ -58,4 +58,8 @@ This repository is an experiment which might end up in [proof by contradiction][
 
 * I'm maintaining my own TypeScript typings, rather than leaving that to the community.
 
-* I'm not writing it in TypeScript, though, because some JavaScript programmers seem to break out in a rash when they touch it. To be fair to them, the differences between `@types/node-fetch` and the official TypeScript definitions of `Request` et al drove me to quite some frustration, hence my own typings for `node-fetch`.
+* I'm not writing it in TypeScript, though, because some JavaScript programmers seem to break out in a rash when they touch it.
+
+To be fair to those who are wary of TypeScript, I was frustrated by the differences between `@types/node-fetch` and the official TypeScript definitions of `Request` in the browser (aka `dom`). For now, I'm dodging the problem by providing my own typings for `node-fetch`.
+
+You might not want to take a dependency on the `dom` typings because they declare many globals that you won't actually have. I'm tempted to clone all the polyfillable `Request` etc typings out of `lib.es2017.full.d.ts` into a `globals.d.ts` (see `@types/react` for an example), but it'll take more time than I have spare right now.
