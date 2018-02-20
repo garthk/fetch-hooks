@@ -3,11 +3,14 @@
 const { experiment, test } = exports.lab = require('lab').script();
 const { expect } = require('code');
 
-const FetchHookManager = require('../lib');
+const { hook, fetch } = require('../lib');
 
 experiment('package exports', () => {
-    test('a function', async () => {
-        expect(FetchHookManager).to.be.a.function()
-        expect(FetchHookManager.name).to.equal('FetchHookManager');
+    test('hook', async () => {
+        expect(hook).to.be.a.function()
+    });
+
+    test('fetch', async () => {
+        expect(fetch).to.be.a.function()
     });
 });

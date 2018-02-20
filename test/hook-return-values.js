@@ -3,9 +3,10 @@
 const { experiment, test, beforeEach, afterEach } = exports.lab = require('lab').script();
 const { expect } = require('code');
 
-const FetchHookManager = require('../lib');
 const nock = require('nock');
 const { globalAgent } = require('http');
+
+const { hook, fetch } = require('../lib');
 
 experiment('simple hook return cases', () => {
     let nocks;
@@ -29,12 +30,10 @@ experiment('simple hook return cases', () => {
             return null;
         }
 
-        const fetch = new FetchHookManager({
-            hooks: [noop]
-        }).fetch;
+        const _fetch = hook(fetch, noop);
 
         const init = { agent: globalAgent }; // test of the typings
-        const req = await fetch('https://example.com', init);
+        const req = await _fetch('https://example.com', init);
         const text = await req.text();
 
         expect(text).to.equal('hello');
@@ -48,20 +47,16 @@ experiment('simple hook return cases', () => {
         async function substituteResponse(request) {
             calls++;
             var s = 'goodbye';
-            const response = new FetchHookManager.upstream.Response(s, {
-                headers: {
-                    'content-type': 'application/test'
-                }
+            const response = new fetch.Response(s, {
+                headers: [[ 'content-type', 'application/test']]
             });
             return { response };
         }
 
-        const fetch = new FetchHookManager({
-            hooks: [substituteResponse]
-        }).fetch;
+        const _fetch = hook(fetch, substituteResponse);
 
         const init = { agent: globalAgent }; // test of the typings
-        const req = await fetch('https://example.com', init);
+        const req = await _fetch('https://example.com', init);
         const text = await req.text();
 
         expect(text).to.equal('goodbye');
@@ -75,18 +70,16 @@ experiment('simple hook return cases', () => {
 
         async function substituteRequest(request) {
             calls++;
-            const replacement = new FetchHookManager.upstream.Request(
+            const replacement = new fetch.Request(
                 'https://example.com'
             );
             return { request: replacement };
         }
 
-        const fetch = new FetchHookManager({
-            hooks: [substituteRequest]
-        }).fetch;
+        const _fetch = hook(fetch, substituteRequest);
 
         const init = { agent: globalAgent }; // test of the typings
-        const req = await fetch('https://example.com/nope', init);
+        const req = await _fetch('https://example.com/nope', init);
         const text = await req.text();
 
         expect(text).to.equal('hello');
