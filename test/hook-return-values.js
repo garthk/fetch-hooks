@@ -12,6 +12,7 @@ experiment('simple hook return cases', () => {
     let nocks;
 
     beforeEach(async () => {
+        nock.cleanAll();
         nock.disableNetConnect();
         nocks = nock('https://example.com').get('/').reply(200, 'hello');
         expect(nocks.pendingMocks()).to.be.an.array().and.have.length(1);

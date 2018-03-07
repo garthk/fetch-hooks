@@ -1,6 +1,6 @@
 {
   "name": "fetch-hooks",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "",
   "main": "./lib/index.js",
   "scripts": {
@@ -18,8 +18,10 @@
   "devDependencies": {
     "@types/nock": "^9.1.2",
     "@types/node": "^9.4.2",
+    "aws-sdk": "^2.205.0",
     "code": "^5.1.2",
     "lab": "^15.2.1",
+    "longjohn": "^0.2.12",
     "nock": "^9.1.6",
     "typescript": "^2.7.2"
   }

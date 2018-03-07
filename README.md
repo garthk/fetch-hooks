@@ -5,28 +5,71 @@ A ~~means~~ **INCOMPLETE WORK IN PROGRESS** to provide a WhatWG-compatible `fetc
 ## Usage
 
 ```js
-const FetchHookManager = require('fetch-hooks');
-const FetchHookManager = require('.');
-const manager = new FetchHookManager({
-    hooks: [ /* ... */ ],
-    upstream: FetchHookManager.upstream, // === require('node-fetch')
-});
-const request = await manager.fetch('https://example.com/');
-console.log(await request.text());
+const { hook, fetch, hooks } = require('fetch-hooks');
+const _fetch = hook(fetch, myHook); // construct a hooked fetch
+const response = await _fetch(uri); // and use it as if it were normal
+console.log(await response.text());
 ```
 
-`FetchHookManager.fetch` will construct a `Request` using `node-fetch`, call each function in `hooks`, `await` its return value, and then:
+### Hooking `data:` URLs
 
+```js
+const _fetch = hook(fetch, hooks.data);
+const response = await _fetch('data:text/ascii;base64,TUlORCBCTE9XTg==');
+console.log(await response.text());
+```
+
+### Hooking `s3:` URLs
+
+```js
+// construct an S3 Service object
+const { S3 } = require('aws-sdk');
+const s3 = new S3({
+    region: 'ap-southeast-2',
+    signatureVersion: 'v4',
+});
+
+// attach it to an S3 hook for your bucket's base URL:
+const { hook, fetch, hooks } = require('fetch-hooks');
+const s3hook = hooks.s3(s3, 's3://bucket/');
+const _fetch = hook(fetch, s3hook);
+
+// fetch content from the bucket
+const response = await _fetch('s3://bucket/key');
+console.log(await response.text());
+```
+
+### Troubleshooting
+
+Set the `DEBUG` environment variable for useful information.
+
+You can also get `curl` commands for debugging purposes spat to standard error, though they assume any input on `PUT`, `POST` etc are in `/tmp/input`:
+
+```js
+const _fetch = hook(fetch /* , ... other hooks */, hooks.curl);
+```
+
+## Under the Covers
+
+```js
+const { hook, fetch, hooks } = require('fetch-hooks');
+const _fetch = hook(fetch /* , ... hooks */);
+const response = await _fetch(uri);
+console.log(await response.text());
+```
+
+A hooked `fetch` will construct a `Request` using `node-fetch` and then, for each of its hooks:
+
+* Call the hook
+* `await` its return value
 * Ignore the hook if the return value is falsey
 * Resolve with the return value's `response` property if found
 * Continue with the return value's `request` property if found
 
-If there are no more hooks, `FetchHookManager.fetch` will:
+If there are no more hooks, a hooked `fetch` will:
 
-* Pass through to `config.upstream` if no hooks are left, or
-* Reject with an error if `config.upstream` is `null`
-
-`FetchHookManager.upstream` contains a default `fetch` from `node-fetch`, also providing access to its handy `Request`, `Response`, and `Headers` constructors.
+* Pass through to its upstream `fetch` (its first argument) if no hooks are left, or
+* Reject with an error if its upstream `fetch` is `null`
 
 ## Typings
 
