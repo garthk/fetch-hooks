@@ -1,12 +1,16 @@
 {
   "name": "fetch-hooks",
   "version": "2.2.0",
-  "description": "",
+  "description": "WhatWG-compatible `fetch` with extras, e.g. data:// and s3://",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/garthk/fetch-hooks.git"
+  },
   "main": "./lib/index.js",
   "scripts": {
     "test": "lab -v -S"
   },
-  "keywords": [],
+  "keywords": ["whatwg", "fetch", "http", "s3", "promise"],
   "author": "Garth Kidd <garth@garthk.com>",
   "license": "MIT",
   "dependencies": {

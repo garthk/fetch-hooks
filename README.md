@@ -2,6 +2,8 @@
 
 A ~~means~~ **INCOMPLETE WORK IN PROGRESS** to provide a WhatWG-compatible `fetch` function with customised behaviour.
 
+[![Build Status](https://travis-ci.org/garthk/fetch-hooks.svg?branch=master)](https://travis-ci.org/garthk/fetch-hooks)
+
 ## Usage
 
 ```js
