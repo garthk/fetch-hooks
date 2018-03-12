@@ -5,12 +5,14 @@
 
 Hook a WhatWG-compatible `fetch` function with customised behaviour, e.g.:
 
-* [`data:`](#hooking-data-urls) URIs
-* [`s3:`](#hooking-s3-urls) URLs
+* Handling [`data:`](#hooking-data-urls-for-methods-get-and-head) URIs
+* Handling [`file:`](#hooking-file-urls-for-methods-get-and-head) URLs
+* Handling [`s3:`](#hooking-s3-urls-for-methods-get-head-put-and-delete) URLs
+* Enforcing [`https:`](#enforcing-https) as your transport protocol
+* Dumping [`curl`](#troubleshooting-with-curl) command lines
 
 TODO:
 
-* `file:` URIs
 * [OpenZipkin B3 propagation](https://github.com/openzipkin/b3-propagation)
 
 ## Usage
@@ -22,7 +24,9 @@ const response = await _fetch(uri); // and use it as if it were normal
 console.log(await response.text());
 ```
 
-### Hooking `data:` URLs
+### Hooking `data:` URLs for methods `GET` and `HEAD`
+
+Add `hooks.data` to support `data:` URIs:
 
 ```js
 const _fetch = hook(fetch, hooks.data);
@@ -30,7 +34,29 @@ const response = await _fetch('data:text/ascii;base64,TUlORCBCTE9XTg==');
 console.log(await response.text());
 ```
 
-### Hooking `s3:` URLs
+### Hooking `file:` URLs for methods `GET` and `HEAD`
+
+Add a `hooks.file` return value to support S3 bucket access via `s3:` URIs:
+
+```js
+const _fetch = hook(fetch, hooks.file({ baseURI: process.cwd() }));
+const response = await _fetch('file:test/data/smiley.txt');
+console.log(await response.text());
+```
+
+File hooks are only active for request URIs within `baseURI`, which defaults to the process' current working directory _at request time_.
+
+**WARNINGS:**
+
+Due to quirks of `node-fetch` 2.1.1 (2018-03-05):
+
+* If you request a relative `file:` URI, `hook` will resolve it against the process' current working directory _at request time_ before passing it to the hooks. This is necessary to survive the `Request` constructor.
+
+* If you call `response.text()`, all files are read as if encoded in UTF-8, even if they aren't. I'm jamming `charset=UTF-8` into the `Content-Type` as fair warning. Try the `node-fetch` extensions `response.body.buffer` and `response.body.textConverted()` if this doesn't work for you.
+
+### Hooking `s3:` URLs for methods `GET`, `HEAD`, `PUT`, and `DELETE`
+
+Add a `hooks.s3` return value to support S3 bucket access:
 
 ```js
 // construct an S3 Service object
@@ -42,7 +68,7 @@ const s3 = new S3({
 
 // attach it to an S3 hook for your bucket's base URL:
 const { hook, fetch, hooks } = require('fetch-hooks');
-const s3hook = hooks.s3(s3, 's3://bucket/');
+const s3hook = hooks.s3(s3, { baseURI: 's3://bucket', acl: 'private' });
 const _fetch = hook(fetch, s3hook);
 
 // fetch content from the bucket
@@ -50,15 +76,40 @@ const response = await _fetch('s3://bucket/key');
 console.log(await response.text());
 ```
 
-### Troubleshooting
+S3 URIs give the bucket name where you'd expect the host name, consistent with the [`aws s3`][aws-cli-s3] command line.
 
-Set the `DEBUG` environment variable for useful information.
+[aws-cli-s3]: https://docs.aws.amazon.com/cli/latest/reference/s3/index.html
 
-You can also get `curl` commands for debugging purposes spat to standard error, though they assume any input on `PUT`, `POST` etc are in `/tmp/input`:
+S3 hooks are only active for request URIs within `baseURI`, which defaults to `s3:/` to match any bucket.
+
+The `acl` option specifies a [canned ACL][canned-acl], and defaults to `private`.
+
+[canned-acl]: https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl
+
+### Enforcing HTTPS
+
+Add `hooks.httpsOnly` to enforce that you're only willing to speak over the HTTPS protocol.
 
 ```js
-const _fetch = hook(fetch /* , ... other hooks */, hooks.curl);
+const { hook, fetch, hooks } = require('fetch-hooks');
+const _fetch = hook(fetch, /* other hooks, */ hooks.httpsOnly);
 ```
+
+It's safe to use `hooks.httpsOnly` last in the chain, as the `file:` and `data:` hooks will have already responded, and the `s3:` hook will have changed the request to a signed `https:` request.
+
+### Troubleshooting with `curl`
+
+Add `hooks.curl` to write `curl` commands to standard error:
+
+```js
+const _fetch = hook(fetch, /* other hooks, */ hooks.curl);
+```
+
+The commands assume any input for `PUT`, `POST` etc are in `/tmp/input`. The hook does _not_ write any such content to `/tmp/input`.
+
+You can also set the `DEBUG` environment variable to have useful information dumped to the console. See the [`debug`][debug] documentation for more detail.
+
+[debug]: https://www.npmjs.com/package/debug
 
 ## Under the Covers
 

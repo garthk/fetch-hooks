@@ -9,24 +9,26 @@ const { format, parse } = require('url');
 
 const BUCKET = '73077c8d-e53e-49f4-9060-c5217d296d5f';
 const ENDPOINT = 's3.ap-southeast-2.amazonaws.com';
-require('longjohn');
-experiment('fetching s3: URIs', () => {
-    /**
-     * A very, very small mock of an S3 Service object.
-     *
-     * @type {any}
-     */
-    const s3 = {
-        getSignedUrl: (operation, params, cb) => {
-            cb(null, format({
-                protocol: 'https:',
-                hostname: `${params.Bucket}.${ENDPOINT}`,
-                pathname: params.Key,
-            }));
-        },
-    };
 
-    const _fetch = hook(fetch, hooks.s3(s3, `s3://${BUCKET}`));
+require('longjohn'); // required for stack testing
+
+/**
+ * A very, very small mock of an S3 Service object.
+ *
+ * @type {any}
+ */
+const s3 = {
+    getSignedUrl: (operation, params, cb) => {
+        cb(null, format({
+            protocol: 'https:',
+            hostname: `${params.Bucket}.${ENDPOINT}`,
+            pathname: params.Key,
+        }));
+    },
+};
+
+experiment('fetching s3: URIs with the default base URI', () => {
+    const _fetch = hook(fetch, hooks.s3(s3));
 
     experiment('GET s3://bucket/key', () => {
         const uri = `s3://${BUCKET}/index.html`;
@@ -57,6 +59,80 @@ experiment('fetching s3: URIs', () => {
         test('text() decoded properly', async () => {
             const text = await req.text();
             expect(text).to.equal('Hello.\n');
+        });
+    });
+});
+
+experiment('fetching s3: URIs with a base URI constrained to a particular bucket', () => {
+    const _fetch = hook(fetch, hooks.s3(s3, { baseURI: `s3://${BUCKET}` }));
+
+    experiment('GET s3://bucket/key', () => {
+        const uri = `s3://${BUCKET}/index.html`;
+        /** @type {Response} */
+        let req;
+
+        before(async () => {
+            nock.disableNetConnect();
+            const nocks = nock(`https://${BUCKET}.${ENDPOINT}:443`)
+                .get('/index.html')
+                .reply(200, 'Hello.\n', { 'Content-Type': 'text/html' });
+            req = await _fetch(uri, {});
+        });
+
+        after(async () => {
+            nock.cleanAll();
+            nock.enableNetConnect();
+        });
+
+        test('200', async () => {
+            expect(req.status).to.equal(200);
+        });
+
+        test('got content-type: text/html', async () => {
+            expect(req.headers.get('content-type')).to.equal('text/html');
+        });
+
+        test('text() decoded properly', async () => {
+            const text = await req.text();
+            expect(text).to.equal('Hello.\n');
+        });
+    });
+
+    experiment('GET s3://differentbucket/key', () => {
+        const uri = `s3://differentbucket/index.html`;
+        /** @type {Response} */
+        let req;
+
+        before(async () => {
+            nock.disableNetConnect();
+        });
+
+        after(async () => {
+            nock.cleanAll();
+            nock.enableNetConnect();
+        });
+
+        test('passed through to upstream', async () => {
+            await expect(_fetch(uri, {})).rejects('Only HTTP(S) protocols are supported');
+        });
+    });
+
+    experiment('GET s3://bucketwithlongername/key', () => {
+        const uri = `s3://${BUCKET}2/index.html`;
+        /** @type {Response} */
+        let req;
+
+        before(async () => {
+            nock.disableNetConnect();
+        });
+
+        after(async () => {
+            nock.cleanAll();
+            nock.enableNetConnect();
+        });
+
+        test('passed through to upstream', async () => {
+            await expect(_fetch(uri, {})).rejects('Only HTTP(S) protocols are supported');
         });
     });
 
