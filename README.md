@@ -1,8 +1,16 @@
 # fetch-hooks
 
-A ~~means~~ **INCOMPLETE WORK IN PROGRESS** to provide a WhatWG-compatible `fetch` function with customised behaviour.
-
 [![Build Status](https://travis-ci.org/garthk/fetch-hooks.svg?branch=master)](https://travis-ci.org/garthk/fetch-hooks)
+
+Hook a WhatWG-compatible `fetch` function with customised behaviour, e.g.:
+
+* [`data:`](#hooking-data-urls) URIs
+* [`s3:`](#hooking-s3-urls) URLs
+
+TODO:
+
+* `file:` URIs
+* [OpenZipkin B3 propagation](https://github.com/openzipkin/b3-propagation)
 
 ## Usage
 
