@@ -1,6 +1,7 @@
 # fetch-hooks
 
-[![Build Status](https://travis-ci.org/garthk/fetch-hooks.svg?branch=master)](https://travis-ci.org/garthk/fetch-hooks)
+[![Build status](https://travis-ci.org/garthk/fetch-hooks.svg?branch=master)](https://travis-ci.org/garthk/fetch-hooks)
+[![Greenkeeper badge](https://badges.greenkeeper.io/garthk/fetch-hooks.svg)](https://greenkeeper.io/)
 
 Hook a WhatWG-compatible `fetch` function with customised behaviour, e.g.:
 
