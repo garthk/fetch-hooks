@@ -43,6 +43,16 @@ experiment('fetching file: URIs with baseURI set to test data directory', () => 
         });
     });
 
+    experiment('GET relative path', () => {
+        test('200 OK with correct text', async () => {
+            process.chdir(posix.resolve(__dirname, 'data'));
+            const req = await _fetch('file:smiley.txt', {});
+            expect(req.status).to.equal(200);
+            const text = await req.text();
+            expect(text).to.equal(readFileSync(join(__dirname, 'data', 'smiley.txt'), 'utf8'));
+        });
+    });
+
     experiment('GET file that doesn\'t exist', () => {
         const uri = format({
             protocol: 'file:',
@@ -119,5 +129,14 @@ experiment('fetching file: URIs with baseURI set to test data directory', () => 
             const req = await _fetch(uri, { method: 'HEAD' });
             expect(req.headers.get('content-length')).to.equal('5');
         });
+    });
+
+    test('http: URL still works', async () => {
+        const _fetch = hook(fetch, hooks.file({ baseURI: join(__dirname, 'data') }));
+        const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+        const req = await _fetch('https://example.com', {});
+        expect(req.status).to.equal(200);
+        const text = await req.text();
+        expect(text).to.equal('hello');
     });
 });

@@ -1,6 +1,6 @@
 {
   "name": "fetch-hooks",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "WhatWG-compatible `fetch` with extras, e.g. data:// and s3://",
   "repository": {
     "type": "git",
@@ -23,7 +23,8 @@
     "debug": "^3.1.0",
     "joi": "^13.1.2",
     "mime": "^2.2.0",
-    "node-fetch": "^2.1.1"
+    "node-fetch": "^2.1.1",
+    "rsyslog": "^1.1.0"
   },
   "devDependencies": {
     "@types/nock": "^9.1.2",

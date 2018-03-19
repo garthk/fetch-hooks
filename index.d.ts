@@ -1,5 +1,6 @@
 import { Agent } from 'https';
 import { Readable } from 'stream';
+import { RemoteSyslogOptions } from 'rsyslog';
 
 /**
  * Return a new API-compatible WhatWG `fetch`, as interfered with by `hooks`.
@@ -51,6 +52,11 @@ export namespace hooks {
      * Handle `s3:` URIs.
      */
     export function s3(options: { baseURI?: string; acl?: string }): FetchHook;
+
+    /**
+     * Report activity to a remote syslog daemon over UDP.
+     */
+    export function rsyslog(options: RemoteSyslogOptions): FetchHook;
 }
 
 /**
@@ -83,7 +89,20 @@ interface FetchHookResponse {
     request?: Request;
 
     /** A final `Response` */
-    response: Response;
+    response?: Response;
+
+    /**
+     * A function to call before `request` is passed upstream.
+     * Also called if a hook returns a `response`, in which case the
+     * `timestamp` will come in handy.
+     */
+    prereq?: (request: Request, timestamp: number) => void;
+
+    /** A function to call after `request` was passed upstream */
+    postreq?: (request: Request, response: Response, err?: Error) => void;
+
+    /** A function to call when a hook, `prereq`, or `postreq` crashes out. */
+    error?: (err: Error) => void;
 }
 
 /**

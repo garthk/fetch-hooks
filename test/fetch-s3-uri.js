@@ -322,4 +322,12 @@ experiment('fetching s3: URIs with a base URI constrained to a particular bucket
             expect(req.status).to.equal(204);
         });
     });
+
+    test('http: URL still works', async () => {
+        const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+        const req = await _fetch('https://example.com', {});
+        expect(req.status).to.equal(200);
+        const text = await req.text();
+        expect(text).to.equal('hello');
+    });
 });

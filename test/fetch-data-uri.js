@@ -64,4 +64,12 @@ experiment('fetching data: URIs', () => {
             expect(req.headers.get('content-length')).to.equal(buf.byteLength.toFixed(0));
         });
     });
+
+    test('http: URL still works', async () => {
+        const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+        const req = await _fetch('https://example.com', {});
+        expect(req.status).to.equal(200);
+        const text = await req.text();
+        expect(text).to.equal('hello');
+    });
 });

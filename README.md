@@ -9,9 +9,14 @@ Hook a WhatWG-compatible `fetch` function with customised behaviour, e.g.:
 * Handling [`file:`](#hooking-file-urls-for-methods-get-and-head) URLs
 * Handling [`s3:`](#hooking-s3-urls-for-methods-get-head-put-and-delete) URLs
 * Enforcing [`https:`](#enforcing-https) as your transport protocol
-* Dumping [`curl`](#troubleshooting-with-curl) command lines
 
-TODO:
+More experimentally:
+
+* Dumping [`curl`](#troubleshooting-with-curl) command lines
+* Logging to [`rsyslog`](#logging-to-a-remote-syslog-server)
+* Adding your own custom [lifecycle hooks](#adding-your-own-lifecycle-hooks)
+
+Being considered:
 
 * [OpenZipkin B3 propagation](https://github.com/openzipkin/b3-propagation)
 
@@ -105,11 +110,51 @@ Add `hooks.curl` to write `curl` commands to standard error:
 const _fetch = hook(fetch, /* other hooks, */ hooks.curl);
 ```
 
-The commands assume any input for `PUT`, `POST` etc are in `/tmp/input`. The hook does _not_ write any such content to `/tmp/input`.
 
 You can also set the `DEBUG` environment variable to have useful information dumped to the console. See the [`debug`][debug] documentation for more detail.
 
 [debug]: https://www.npmjs.com/package/debug
+
+**WARNINGS:**
+
+* **This part of the API is not yet stable**, the input handling in particular. I reserve the right to make breaking changes with minor or patch level version bumps until I see some sign of third party usage. I welcome PRs and suggestions.
+
+* The commands assume any input for `PUT`, `POST` etc are in `/tmp/input`. The hook does _not_ write any such content to `/tmp/input`.
+
+### Logging to a remote syslog server
+
+Add `hooks.rsyslog` to send packets to an [RFC5424] compliant server.
+
+
+```js
+const _fetch = hook(fetch, /* other hooks, */ hooks.rsyslog({
+  target_host: '127.0.0.1',
+  target_port: 514,
+}));
+```
+
+For full documentation of the options, see the [`rsyslog`][rsyslog] package.
+
+**WARNINGS:**
+
+* **This part of the API is not yet stable**, the output format in particular. I reserve the right to make breaking changes with minor or patch level version bumps until I see some sign of third party usage. I welcome PRs and suggestions.
+
+* The `len=` segment requires some guesswork, and might not match the number of bytes on the wire, especially if the server omits or lies about the `content-length`.
+
+[rsyslog]: https://www.npmjs.com/package/rsyslog
+[RFC5424]: https://tools.ietf.org/html/rfc5424
+
+### Adding your own lifecycle hooks
+
+Return a function named `prereq`, `postreq`, or `error` to get called either before a request, after a request, or when a hook fails:
+
+* `postreq(req, res, err)` will be called after a request is made, with either `res` or `err` set to `null` depending on whether the request crashed out or succeeded.
+
+* `error(err)` will be called if a call to a hook or lifecycle hook function fails.
+
+**WARNINGS:**
+
+* **This part of the API is not yet stable**. I reserve the right to make breaking changes with minor or patch level version bumps until I see some sign of third party usage. I welcome PRs and suggestions.
 
 ## Under the Covers
 
