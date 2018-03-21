@@ -1,6 +1,6 @@
 {
   "name": "fetch-hooks",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "WhatWG-compatible `fetch` with extras, e.g. data:// and s3://",
   "repository": {
     "type": "git",

@@ -32,6 +32,11 @@ experiment('fetching data: URIs', () => {
             const req = await _fetch(uri, {});
             expect(req.headers.get('content-type')).to.equal('text/plain; charset=US-ASCII');
         });
+
+        test(`got content-length: ${TEXT.length}`, async () => {
+            const req = await _fetch(uri, {});
+            expect(req.headers.get('content-length')).to.equal(TEXT.length.toFixed(0));
+        });
     });
 
     experiment('with content type and base64 encoding', () => {
@@ -52,6 +57,11 @@ experiment('fetching data: URIs', () => {
         test(`got content-type: ${CONTENT_TYPE}`, async () => {
             const req = await _fetch(uri, {});
             expect(req.headers.get('content-type')).to.equal(CONTENT_TYPE);
+        });
+
+        test(`got content-length: ${buf.byteLength}`, async () => {
+            const req = await _fetch(uri, {});
+            expect(req.headers.get('content-length')).to.equal(buf.byteLength.toFixed(0));
         });
     });
 });
