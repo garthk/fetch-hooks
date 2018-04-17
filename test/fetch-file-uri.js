@@ -8,6 +8,7 @@ const { hook, fetch, hooks } = require('../lib');
 const { format, parse } = require('url');
 const { join, posix, sep } = require('path');
 const { readFileSync } = require('fs');
+const { Readable } = require('stream');
 
 const TEXT = 'MIND BLOWN';
 const CONTENT_TYPE = 'text/ascii';
@@ -24,6 +25,29 @@ experiment('fetching file: URIs with baseURI set to test data directory', () => 
         test('200', async () => {
             const req = await _fetch(uri, {});
             expect(req.status).to.equal(200);
+        });
+
+        test('response looks like a Response', async () => {
+            const res = await _fetch(uri, {});
+            expect(res.text, 'text').to.be.a.function();
+            expect(res.body, 'body').to.be.instanceof(Readable);
+            expect(res.headers, 'headers').to.be.an.object();
+            expect(res.ok, 'ok').to.be.a.boolean();
+            expect(res.headers.get, 'headers.get').to.be.a.function();
+            expect(res.status, 'status').to.be.a.number();
+            expect(res.statusText, 'statusText').to.be.a.string();
+            expect(res.type, 'type').to.be.a.string();
+            expect(res.url, 'url').to.be.a.string();
+            expect(res.clone, 'clone').to.be.a.function();
+        });
+
+        test('response looks like a Body', async () => {
+            const res = await _fetch(uri, {});
+            expect(res.bodyUsed, 'bodyUsed').to.be.a.boolean();
+            expect(res.blob, 'blob').to.be.a.function();
+            expect(res.json, 'json').to.be.a.function();
+            expect(res.text, 'text').to.be.a.function();
+            expect(res.formData, 'formData').to.be.undefined();
         });
 
         test('text() decoded as if UTF-8 charset / utf8 encoding', async () => {

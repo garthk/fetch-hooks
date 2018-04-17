@@ -6,6 +6,7 @@ const nock = require('nock');
 const { globalAgent } = require('http');
 const { hook, fetch, hooks, helpers } = require('../lib');
 const { format, parse } = require('url');
+const { Readable } = require('stream');
 
 const BUCKET = '73077c8d-e53e-49f4-9060-c5217d296d5f';
 const ENDPOINT = 's3.ap-southeast-2.amazonaws.com';
@@ -50,6 +51,27 @@ experiment('fetching s3: URIs with the default base URI', () => {
 
         test('200', async () => {
             expect(req.status).to.equal(200);
+        });
+
+        test('response looks like a Response', async () => {
+            expect(req.text, 'text').to.be.a.function();
+            expect(req.body, 'body').to.be.instanceof(Readable);
+            expect(req.headers, 'headers').to.be.an.object();
+            expect(req.ok, 'ok').to.be.a.boolean();
+            expect(req.headers.get, 'headers.get').to.be.a.function();
+            expect(req.status, 'status').to.be.a.number();
+            expect(req.statusText, 'statusText').to.be.a.string();
+            expect(req.type, 'type').to.be.a.string();
+            expect(req.url, 'url').to.be.a.string();
+            expect(req.clone, 'clone').to.be.a.function();
+        });
+
+        test('response looks like a Body', async () => {
+            expect(req.bodyUsed, 'bodyUsed').to.be.a.boolean();
+            expect(req.blob, 'blob').to.be.a.function();
+            expect(req.json, 'json').to.be.a.function();
+            expect(req.text, 'text').to.be.a.function();
+            expect(req.formData, 'formData').to.be.undefined();
         });
 
         test('got content-type: text/html', async () => {

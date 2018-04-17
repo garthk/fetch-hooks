@@ -206,7 +206,13 @@ If there are no more hooks, a hooked `fetch` will:
 
 ## Typings
 
-I'm supplying my own typings for `node-fetch`, which _might_ interfere with yours. Please let me know how it turns out.
+I've cloned the Microsoft typings for `fetch` and related types, adapting them for `node-fetch`. If the typings don't match the `node-fetch` reality, please open an issue.
+
+Previous experiments that didn't work:
+
+* Relying on the Microsoft typings directly, i.e. requiring `dom` in `compilerOptions.lib` in `tsconfig.json`. The global namespace clutter from `dom` made it hard to find undefined variables, `fetch` in particular.
+
+* Relying on `@types/node-fetch`. I didn't enjoy the mismatch with Microsoft's typings for `fetch`, and didn't have the time to encourage the breaking changes required to track closer. They're looking better, now, so it might be worth revisiting this in the future.
 
 ## Background
 
@@ -227,15 +233,3 @@ This repository is an experiment which might end up in [proof by contradiction][
 [WHATWGF]: https://github.github.io/fetch/
 [WPBC]: https://en.wikipedia.org/wiki/Proof_by_contradiction
 [WH]: https://en.wikipedia.org/wiki/Hooking
-
-## Attitude Problems
-
-* I'm writing this for Node 8 and above, not earlier Node, and not your browser.
-
-* I'm maintaining my own TypeScript typings, rather than leaving that to the community.
-
-* I'm not writing it in TypeScript, though, because some JavaScript programmers seem to break out in a rash when they touch it.
-
-To be fair to those who are wary of TypeScript, I was frustrated by the differences between `@types/node-fetch` and the official TypeScript definitions of `Request` in the browser (aka `dom`). For now, I'm dodging the problem by providing my own typings for `node-fetch`.
-
-You might not want to take a dependency on the `dom` typings because they declare many globals that you won't actually have. I'm tempted to clone all the polyfillable `Request` etc typings out of `lib.es2017.full.d.ts` into a `globals.d.ts` (see `@types/react` for an example), but it'll take more time than I have spare right now.

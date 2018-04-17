@@ -54,9 +54,13 @@ export namespace hooks {
     export function s3(options: { baseURI?: string; acl?: string }): FetchHook;
 
     /**
-     * Report activity to a remote syslog daemon over UDP.
+     * Report activity to a remote syslog daemon over UDP. `options` are
+     * mainly for `rsyslog`, except `elide` which specifies a function to
+     * remove secrets from a URL. The default is to remove the `auth` and
+     * `query` components so you don't have to later scramble to flush
+     * those from your logs.
      */
-    export function rsyslog(options: RemoteSyslogOptions): FetchHook;
+    export function rsyslog(options: RemoteSyslogOptions & { elide(url: string): string }): FetchHook;
 }
 
 /**
@@ -122,41 +126,149 @@ interface NodeFetchBonuses {
     /**
      * The `node-fetch` implementation of the WhatWG `Request`.
      */
-    Request: new(input: string | Request, init?: RequestInit) => Request;
+    Request: {
+        new(input: string | Request, init?: RequestInit): Request;
+    }
 
     /**
      * The `node-fetch` implementation of the WhatWG `Response`.
      */
-    Response: new(body?: BodyInit, init?: ResponseInit) => Response;
+    Response: {
+        new(body?: BodyInit, init?: ResponseInit): Response;
+        // static `error` not present in `node-fetch`
+        // static `redirect` not present in `node-fetch`
+    };
+
+    /**
+     * The `node-fetch` implementation of the WhatWG `Headers`.
+     */
+    Headers: {
+        new(init?: Headers | string[][] | object): Headers;
+    };
 }
 
 /**
- * Global interfaces.
+ * The following global interfaces are, unless noted otherwise:
+ *
+ * - Copied from `https://github.com/Microsoft/TypeScript/blob/master/lib/lib.es2017.full.d.ts`
+ * - Copyright (c) Microsoft Corporation with all rights reserved
+ * - Apache licensed
  */
-declare global {
-    /**
-     * `node-fetch` extensions to the global `RequestInit`
-     */
-    interface RequestInit {
-        agent?: Agent; // TODO: figure out how to more strongly type this
-        compress?: boolean;
-        follow?: number;
-        size?: number;
-        timeout?: number;
-    }
+interface GlobalFetch {
+    fetch(input: RequestInfo, init?: RequestInit): Promise<Response>;
+}
 
-    /**
-     * `node-fetch` extensions to the global `Request`
-     */
-    interface Request {
-        agent?: Agent; // TODO: figure out how to more strongly type this
-        compress: boolean;
-        counter: number;
-        follow: number;
-        hostname: string;
-        port?: number;
-        protocol: string;
-        size: number;
-        timeout: number;
-    }
+interface RequestInit { // node-fetch
+    body?: BodyInit;
+    agent?: Agent;
+    compress?: boolean;
+    follow?: number;
+    size?: number;
+    timeout?: number;
+}
+
+interface RequestInit {
+    // body?: any; // see node-fetch RequestInit above
+    cache?: RequestCache;
+    credentials?: RequestCredentials;
+    headers?: Headers | string[][] | {[key:string]: string}; // https://github.github.io/fetch/
+    integrity?: string;
+    keepalive?: boolean;
+    method?: string;
+    mode?: RequestMode;
+    redirect?: RequestRedirect;
+    referrer?: string;
+    referrerPolicy?: ReferrerPolicy;
+    window?: any;
+}
+
+interface Request { // node-fetch extensions
+    agent?: Agent;
+    compress: boolean;
+    counter: number;
+    follow: number;
+    hostname: string;
+    port?: number;
+    protocol: string;
+    size: number;
+    timeout: number;
+}
+
+interface Request extends Object, Body {
+    readonly cache: RequestCache;
+    readonly credentials: RequestCredentials;
+    readonly destination: RequestDestination;
+    readonly headers: Headers;
+    readonly integrity: string;
+    readonly keepalive: boolean;
+    readonly method: string;
+    readonly mode: RequestMode;
+    readonly redirect: RequestRedirect;
+    readonly referrer: string;
+    readonly referrerPolicy: ReferrerPolicy;
+    readonly type: RequestType;
+    readonly url: string;
+    clone(): Request;
+}
+
+interface ResponseInit {
+    headers?: Headers | string[][];
+    status?: number;
+    statusText?: string;
+    url?: string; // node-fetch
+}
+
+type BodyInit = ArrayBuffer | ArrayBufferView | string | NodeJS.ReadableStream; // node-fetch
+type ReferrerPolicy = "" | "no-referrer" | "no-referrer-when-downgrade" | "origin-only" | "origin-when-cross-origin" | "unsafe-url";
+type RequestCache = "default" | "no-store" | "reload" | "no-cache" | "force-cache";
+type RequestCredentials = "omit" | "same-origin" | "include";
+type RequestDestination = "" | "document" | "sharedworker" | "subresource" | "unknown" | "worker";
+type RequestInfo = Request | string;
+type RequestMode = "navigate" | "same-origin" | "no-cors" | "cors";
+type RequestRedirect = "follow" | "error" | "manual";
+type RequestType = "" | "audio" | "font" | "image" | "script" | "style" | "track" | "video";
+type ResponseType = "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect";
+type MediaKeyStatus = "usable" | "expired" | "output-downscaled" | "output-not-allowed" | "status-pending" | "internal-error";
+
+interface Headers {
+    append(name: string, value: string): void;
+    delete(name: string): void;
+    forEach(callback: ForEachCallback): void;
+    get(name: string): string | null;
+    has(name: string): boolean;
+    set(name: string, value: string): void;
+}
+
+interface ForEachCallback {
+    (keyId: any, status: MediaKeyStatus): void;
+}
+
+interface Response extends Object, Body {
+    readonly body: NodeJS.ReadableStream | null; // adapted for node-fetch
+    readonly headers: Headers;
+    readonly ok: boolean;
+    readonly status: number;
+    readonly statusText: string;
+    readonly type: ResponseType;
+    readonly url: string;
+    readonly redirected: boolean;
+    clone(): Response;
+}
+
+interface Body {
+    readonly bodyUsed: boolean;
+    arrayBuffer(): Promise<ArrayBuffer>;
+    blob(): Promise<Blob>; // missing from @types/node-fetch but present in node-fetch
+    json(): Promise<any>;
+    json<T>(): Promise<T>; // node-fetch
+    text(): Promise<string>;
+    // formData(): Promise<FormData>; // not supported by node-fetch
+}
+
+interface Blob {
+    readonly size: number;
+    readonly type: string;
+    msClose(): void;
+    msDetachStream(): any;
+    slice(start?: number, end?: number, contentType?: string): Blob;
 }
