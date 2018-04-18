@@ -130,10 +130,36 @@ Add `hooks.rsyslog` to send packets to an [RFC5424] compliant server.
 const _fetch = hook(fetch, /* other hooks, */ hooks.rsyslog({
   target_host: '127.0.0.1',
   target_port: 514,
+  elide: url => withPartsRemoved(url),
 }));
 ```
 
-For full documentation of the options, see the [`rsyslog`][rsyslog] package.
+`elide` is optional. The default for `elide` will remove, from the URLs
+sent to the remote syslog:
+
+* The `auth` component
+* The `query` component
+* The data in the `pathname` component, if the protocol is `data:`
+
+Otherwise put, the default `elide` preserves only:
+
+* `protocol`
+* `host`, which includes the port number
+* `pathname`, unless `protocol` is `data:`
+
+I chose a default this conservative so neither of us have to scramble to remove usernames, passwords, and secrets embedded in queries from our log files.
+
+To make your own choices, override `elide` with a function returning a string given a URL. The following will pass the full URL:
+
+```js
+const _fetch = hook(fetch, /* other hooks, */ hooks.rsyslog({
+  target_host: '127.0.0.1',
+  target_port: 514,
+  elide: url => url,
+}));
+```
+
+For full documentation of the rest of the options, see the [`rsyslog`][rsyslog] package.
 
 **WARNINGS:**
 

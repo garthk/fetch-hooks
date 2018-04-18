@@ -122,6 +122,116 @@ experiment('lifecycle event listener: rsyslog', () => {
             expect(parseInt(messageParts[3].slice(3))).to.be.a.number().min(0).max(10);
         });
     });
+
+    experiment('secret elision', () => {
+        let req;
+        let nowish;
+        let headerParts = [];
+        let messageParts = [];
+
+        before(async () => {
+            nock.cleanAll();
+            nock.disableNetConnect();
+            const nocks = nock('https://example.com').get('/?secret=xyzzy').reply(200, 'hello');
+            const _fetch = hook(fetch, hooks.rsyslog({
+                target_host: address,
+                target_port: port,
+                appname: 'appname'
+            }));
+            nowish = Date.now();
+            messages.splice(0); // clears them
+            req = await _fetch('https://user:password@example.com/?secret=xyzzy');
+            await waitLongEnoughForDispatch();
+
+            if (messages.length > 0) {
+                const bomIndex = messages[0].indexOf(new Buffer('EFBBBF', 'hex'));
+                const header = messages[0].slice(0, bomIndex);
+                const message = messages[0].slice(bomIndex + 3);
+                messageParts = message.toString('utf-8').split(' ');
+                headerParts = header.toString('ascii').split(' ');
+            }
+        });
+
+        test('request succeeded', async () => {
+            expect(req.status).to.equal(200);
+        })
+
+        test('packet arrived', async () => {
+            expect(messages.length).to.equal(1);
+        });
+
+        test('secrets were elided', async () => {
+            expect(messageParts[2]).to.equal('https://example.com/');
+        });
+    });
+
+    experiment('data after rsyslog', () => {
+        let req;
+        let nowish;
+        let headerParts = [];
+        let message = '';
+
+        before(async () => {
+            nock.cleanAll();
+            nock.disableNetConnect();
+            const _fetch = hook(fetch, hooks.rsyslog({
+                target_host: address,
+                target_port: port,
+                appname: 'appname'
+            }), hooks.data);
+            nowish = Date.now();
+            messages.splice(0); // clears them
+            req = await _fetch('data:text/ascii;base64,TUlORCBCTE9XTg==');
+            await waitLongEnoughForDispatch();
+
+            if (messages.length > 0) {
+                const bomIndex = messages[0].indexOf(new Buffer('EFBBBF', 'hex'));
+                const header = messages[0].slice(0, bomIndex);
+                message = messages[0].slice(bomIndex + 3).toString('utf-8');
+            }
+        });
+
+        test('request succeeded', async () => {
+            expect(req.status).to.equal(200);
+        })
+
+        test('packet arrived', async () => {
+            expect(messages.length).to.equal(1);
+        });
+
+        test('message', async () => {
+            expect(message).to.match(/^200 GET data:\.{3,3} ms=[0-9] len=10$/);
+        });
+    });
+
+    experiment('data before rsyslog', () => {
+        let req;
+        let nowish;
+        let headerParts = [];
+        let messageParts = [];
+
+        before(async () => {
+            nock.cleanAll();
+            nock.disableNetConnect();
+            const _fetch = hook(fetch, hooks.rsyslog({
+                target_host: address,
+                target_port: port,
+                appname: 'appname'
+            }), hooks.data);
+            nowish = Date.now();
+            messages.splice(0); // clears them
+            req = await _fetch('data:text/ascii;base64,TUlORCBCTE9XTg==');
+            await waitLongEnoughForDispatch();
+        });
+
+        test('request succeeded', async () => {
+            expect(req.status).to.equal(200);
+        })
+
+        test('no packet arrived', async () => {
+            expect(messages.length).to.equal(1);
+        });
+    });
 });
 
 async function waitLongEnoughForDispatch() {
