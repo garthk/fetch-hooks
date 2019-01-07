@@ -1,6 +1,6 @@
 {
   "name": "fetch-hooks",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "engines": {
     "node": ">=8.0.0"
   },
@@ -23,8 +23,8 @@
   "author": "Garth Kidd <garth@garthk.com>",
   "license": "MIT",
   "dependencies": {
-    "debug": "^3.1.0",
-    "joi": "^13.4.0",
+    "debug": "^4.1.1",
+    "joi": "^14.3.1",
     "mime": "^2.2.0",
     "node-fetch": "^2.1.1",
     "rsyslog": "^1.1.2"
@@ -32,13 +32,20 @@
   "devDependencies": {
     "@types/nock": "^9.1.2",
     "@types/node": "^8.10.18",
-    "aws-sdk": "^2.205.0",
+    "aws-sdk": "^2.383.0",
     "code": "^5.1.2",
-    "lab": "^15.5.0",
+    "lab": "^18.0.1",
     "longjohn": "^0.2.12",
     "nock": "^9.1.6",
     "typescript": "^2.7.2"
   },
   "typings": "./index.d.ts",
-  "types": "./index.d.ts"
+  "types": "./index.d.ts",
+  "greenkeeper": {
+    "ignore": [
+      "@types/nock",
+      "@types/node",
+      "nock"
+    ]
+  }
 }

@@ -1,6 +1,7 @@
 import { Agent } from 'https';
 import { Readable } from 'stream';
 import { RemoteSyslogOptions } from 'rsyslog';
+import { S3 } from 'aws-sdk';
 
 /**
  * Return a new API-compatible WhatWG `fetch`, as interfered with by `hooks`.
@@ -51,7 +52,7 @@ export namespace hooks {
     /**
      * Handle `s3:` URIs.
      */
-    export function s3(options: { baseURI?: string; acl?: string }): FetchHook;
+    export function s3(s3: S3, options: { baseURI?: string; acl?: string }): FetchHook;
 
     /**
      * Report activity to a remote syslog daemon over UDP. `options` are
