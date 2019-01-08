@@ -1,7 +1,6 @@
 import { Agent } from 'https';
 import { Readable } from 'stream';
 import { RemoteSyslogOptions } from 'rsyslog';
-import { S3 } from 'aws-sdk';
 
 /**
  * Return a new API-compatible WhatWG `fetch`, as interfered with by `hooks`.
@@ -50,9 +49,17 @@ export namespace hooks {
     export function file(options: { baseURI?: string }): FetchHook;
 
     /**
+     * Object compatible with AWS SDK S3 client `getSignedUrl` (asynchronous).
+     */
+    export interface S3URLSigner {
+        /** Get a pre-signed URL */
+        getSignedUrl(operation: string, params: any, callback: (err: Error, url: string) => void): void;
+    }
+
+    /**
      * Handle `s3:` URIs.
      */
-    export function s3(s3: S3, options: { baseURI?: string; acl?: string }): FetchHook;
+    export function s3(s3: S3URLSigner, options: { baseURI?: string; acl?: string }): FetchHook;
 
     /**
      * Report activity to a remote syslog daemon over UDP. `options` are
