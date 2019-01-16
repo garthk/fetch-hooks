@@ -29,6 +29,11 @@ export const fetch: Fetch & NodeFetchBonuses;
  */
 export namespace hooks {
     /**
+     * Add a cookie jar.
+     */
+    export function cookies(): FetchHook;
+
+    /**
      * Dump `curl` command lines to standard error.
      */
     export const curl: FetchHook;
