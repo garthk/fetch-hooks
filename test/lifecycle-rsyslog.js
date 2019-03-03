@@ -39,8 +39,7 @@ experiment('lifecycle event listener: rsyslog', () => {
     experiment('happy path: well behaved listeners on successful request', () => {
         let req;
         let nowish;
-        let headerParts = [];
-        let messageParts = [];
+        let parts = splitParts([]);
 
         before(async () => {
             nock.cleanAll();
@@ -55,14 +54,7 @@ experiment('lifecycle event listener: rsyslog', () => {
             messages.splice(0); // clears them
             req = await _fetch('https://example.com');
             await waitLongEnoughForDispatch();
-
-            if (messages.length > 0) {
-                const bomIndex = messages[0].indexOf(new Buffer('EFBBBF', 'hex'));
-                const header = messages[0].slice(0, bomIndex);
-                const message = messages[0].slice(bomIndex + 3);
-                messageParts = message.toString('utf-8').split(' ');
-                headerParts = header.toString('ascii').split(' ');
-            }
+            parts = splitParts(messages);
         });
 
         test('request succeeded', async () => {
@@ -74,60 +66,59 @@ experiment('lifecycle event listener: rsyslog', () => {
         });
 
         test('syslog priority OK', async () => {
-            expect(headerParts[0]).to.equal('<134>1');
+            expect(parts.header[0]).to.equal('<134>1');
         });
 
         test('syslog timestamp OK', async () => {
-            expect(new Date(headerParts[1]).valueOf()).to.be.a.number().min(nowish).max(nowish + 100);
+            expect(new Date(parts.header[1]).valueOf()).to.be.a.number().min(nowish).max(nowish + 100);
         });
 
         test('syslog hostname OK', async () => {
-            expect(headerParts[2]).to.equal(hostname());
+            expect(parts.header[2]).to.equal(hostname());
         });
 
         test('syslog appname OK', async () => {
-            expect(headerParts[3]).to.equal('appname');
+            expect(parts.header[3]).to.equal('appname');
         });
 
         test('syslog pid OK', async () => {
-            expect(headerParts[4]).to.equal(process.pid.toFixed(0));
+            expect(parts.header[4]).to.equal(process.pid.toFixed(0));
         });
 
         test('syslog msgid === "fetch"', async () => {
-            expect(headerParts[5]).to.equal('fetch');
+            expect(parts.header[5]).to.equal('fetch');
         });
 
         test('syslog structured-data is empty', async () => {
-            expect(headerParts[6]).to.equal(NILVALUE);
+            expect(parts.header[6]).to.equal(NILVALUE);
         });
 
         test('syslog message has 4 parts', async () => {
-            expect(messageParts).to.have.length(4);
+            expect(parts.message).to.have.length(4);
         });
 
         test('syslog message has status code: 200', async () => {
-            expect(messageParts[0]).to.equal('200');
+            expect(parts.message[0]).to.equal('200');
         });
 
         test('syslog message has method in uppercase: GET', async () => {
-            expect(messageParts[1]).to.equal('GET');
+            expect(parts.message[1]).to.equal('GET');
         });
 
         test('syslog message has request url', async () => {
-            expect(messageParts[2]).to.equal('https://example.com/');
+            expect(parts.message[2]).to.equal('https://example.com/');
         });
 
         test('syslog message has request duration in ms', async () => {
-            expect(messageParts[3].slice(0, 3)).to.equal('ms=');
-            expect(parseInt(messageParts[3].slice(3))).to.be.a.number().min(0).max(10);
+            expect(parts.message[3].slice(0, 3)).to.equal('ms=');
+            expect(parseInt(parts.message[3].slice(3))).to.be.a.number().min(0).max(10);
         });
     });
 
     experiment('secret elision', () => {
         let req;
         let nowish;
-        let headerParts = [];
-        let messageParts = [];
+        let parts = splitParts([]);
 
         before(async () => {
             nock.cleanAll();
@@ -142,14 +133,7 @@ experiment('lifecycle event listener: rsyslog', () => {
             messages.splice(0); // clears them
             req = await _fetch('https://user:password@example.com/?secret=xyzzy');
             await waitLongEnoughForDispatch();
-
-            if (messages.length > 0) {
-                const bomIndex = messages[0].indexOf(new Buffer('EFBBBF', 'hex'));
-                const header = messages[0].slice(0, bomIndex);
-                const message = messages[0].slice(bomIndex + 3);
-                messageParts = message.toString('utf-8').split(' ');
-                headerParts = header.toString('ascii').split(' ');
-            }
+            parts = splitParts(messages);
         });
 
         test('request succeeded', async () => {
@@ -161,7 +145,7 @@ experiment('lifecycle event listener: rsyslog', () => {
         });
 
         test('secrets were elided', async () => {
-            expect(messageParts[2]).to.equal('https://example.com/');
+            expect(parts.message[2]).to.equal('https://example.com/');
         });
     });
 
@@ -237,4 +221,20 @@ experiment('lifecycle event listener: rsyslog', () => {
 async function waitLongEnoughForDispatch() {
     await new Promise(cb => setTimeout(cb, 5));
     return;
+}
+
+function splitParts(messages) {
+    if (messages.length < 1) {
+        return {
+            message: [],
+            header: [],
+        };
+    }
+    const bomIndex = messages[0].indexOf(new Buffer('EFBBBF', 'hex'));
+    const header = messages[0].slice(0, bomIndex);
+    const message = messages[0].slice(bomIndex + 3);
+    return {
+        message: message.toString('utf-8').split(' '),
+        header: header.toString('ascii').split(' '),
+    };
 }
