@@ -115,6 +115,49 @@ experiment('lifecycle event listener: rsyslog', () => {
         });
     });
 
+    experiment('unhappy path: failed request', () => {
+        let parts = splitParts([]);
+
+        before(async () => {
+            nock.cleanAll();
+            nock.disableNetConnect();
+            const badFetch = () => {
+                throw new Error('bad');
+            };
+            const _fetch = hook(badFetch, hooks.rsyslog({
+                target_host: address,
+                target_port: port,
+                appname: 'appname'
+            }));
+            messages.splice(0); // clears them
+            nock('https://example.com').get('/').reply(200, 'hello');
+            await expect(_fetch('https://example.com')).rejects('bad');
+            await waitLongEnoughForDispatch();
+            parts = splitParts(messages);
+        });
+
+        test('packet arrived', async () => {
+            expect(messages.length).to.equal(1);
+        });
+
+        test('syslog message has status code: -', async () => {
+            expect(parts.message[0]).to.equal('-');
+        });
+
+        test('syslog message has method in uppercase: GET', async () => {
+            expect(parts.message[1]).to.equal('GET');
+        });
+
+        test('syslog message has request url', async () => {
+            expect(parts.message[2]).to.equal('https://example.com/');
+        });
+
+        test('syslog message has request duration in ms', async () => {
+            expect(parts.message[3].slice(0, 3)).to.equal('ms=');
+            expect(parseInt(parts.message[3].slice(3))).to.be.a.number().min(0).max(10);
+        });
+    });
+
     experiment('secret elision', () => {
         let req;
         let nowish;
