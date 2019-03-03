@@ -157,7 +157,7 @@ experiment('fetching file: URIs with baseURI set to test data directory', () => 
 
     test('http: URL still works', async () => {
         const _fetch = hook(fetch, hooks.file({ baseURI: join(__dirname, 'data') }));
-        const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+        nock('https://example.com').get('/').reply(200, 'hello');
         const req = await _fetch('https://example.com', {});
         expect(req.status).to.equal(200);
         const text = await req.text();

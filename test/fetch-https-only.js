@@ -4,12 +4,7 @@
 const { experiment, test, beforeEach, afterEach } = exports.lab = require('lab').script();
 const { expect } = require('code');
 const nock = require('nock');
-const { globalAgent } = require('http');
 const { hook, fetch, hooks } = require('../lib');
-const { parse } = require('url');
-
-const TEXT = 'MIND BLOWN';
-const CONTENT_TYPE = 'text/ascii';
 
 experiment('ensuring HTTPS only', () => {
     const _fetch = hook(fetch, hooks.httpsOnly);
@@ -24,7 +19,7 @@ experiment('ensuring HTTPS only', () => {
     });
 
     test('HTTPS URI passes through', async () => {
-        const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+        nock('https://example.com').get('/').reply(200, 'hello');
         const req = await _fetch('https://example.com');
         expect(req.status).to.equal(200);
         expect(await req.text()).to.equal('hello');

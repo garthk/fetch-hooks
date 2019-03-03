@@ -17,7 +17,7 @@ experiment('lifecycle event listeners', () => {
         before(async () => {
             nock.cleanAll();
             nock.disableNetConnect();
-            const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+            nock('https://example.com').get('/').reply(200, 'hello');
 
             async function watch(request) {
                 return {
@@ -128,7 +128,7 @@ experiment('lifecycle event listeners', () => {
         before(async () => {
             nock.cleanAll();
             nock.disableNetConnect();
-            const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+            nock('https://example.com').get('/').reply(200, 'hello');
 
             async function watch(request) {
                 return {
@@ -181,7 +181,7 @@ experiment('lifecycle event listeners', () => {
         before(async () => {
             nock.cleanAll();
             nock.disableNetConnect();
-            const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+            nock('https://example.com').get('/').reply(200, 'hello');
 
             async function watch(request) {
                 return {
@@ -234,7 +234,7 @@ experiment('lifecycle event listeners', () => {
         before(async () => {
             nock.cleanAll();
             nock.disableNetConnect();
-            const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+            nock('https://example.com').get('/').reply(200, 'hello');
 
             async function watch(request) {
                 return {
@@ -294,7 +294,7 @@ experiment('lifecycle event listeners', () => {
         before(async () => {
             nock.cleanAll();
             nock.disableNetConnect();
-            const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+            nock('https://example.com').get('/').reply(200, 'hello');
 
             async function watch(request) {
                 return {
@@ -340,7 +340,7 @@ experiment('lifecycle event listeners', () => {
         before(async () => {
             nock.cleanAll();
             nock.disableNetConnect();
-            const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+            nock('https://example.com').get('/').reply(200, 'hello');
 
             async function watch(request) {
                 return {

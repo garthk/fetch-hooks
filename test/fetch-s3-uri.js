@@ -3,7 +3,6 @@
 const { experiment, test, before, after } = exports.lab = require('lab').script();
 const { expect } = require('code');
 const nock = require('nock');
-const { globalAgent } = require('http');
 const { hook, fetch, hooks, helpers } = require('../lib');
 const { format, parse } = require('url');
 const { Readable } = require('stream');
@@ -38,7 +37,7 @@ experiment('fetching s3: URIs with the default base URI', () => {
 
         before(async () => {
             nock.disableNetConnect();
-            const nocks = nock(`https://${BUCKET}.${ENDPOINT}:443`)
+            nock(`https://${BUCKET}.${ENDPOINT}:443`)
                 .get('/index.html')
                 .reply(200, 'Hello.\n', { 'Content-Type': 'text/html' });
             req = await _fetch(uri, {});
@@ -95,7 +94,7 @@ experiment('fetching s3: URIs with a base URI constrained to a particular bucket
 
         before(async () => {
             nock.disableNetConnect();
-            const nocks = nock(`https://${BUCKET}.${ENDPOINT}:443`)
+            nock(`https://${BUCKET}.${ENDPOINT}:443`)
                 .get('/index.html')
                 .reply(200, 'Hello.\n', { 'Content-Type': 'text/html' });
             req = await _fetch(uri, {});
@@ -122,8 +121,6 @@ experiment('fetching s3: URIs with a base URI constrained to a particular bucket
 
     experiment('GET s3://differentbucket/key', () => {
         const uri = `s3://differentbucket/index.html`;
-        /** @type {Response} */
-        let req;
 
         before(async () => {
             nock.disableNetConnect();
@@ -141,8 +138,6 @@ experiment('fetching s3: URIs with a base URI constrained to a particular bucket
 
     experiment('GET s3://bucketwithlongername/key', () => {
         const uri = `s3://${BUCKET}2/index.html`;
-        /** @type {Response} */
-        let req;
 
         before(async () => {
             nock.disableNetConnect();
@@ -165,7 +160,7 @@ experiment('fetching s3: URIs with a base URI constrained to a particular bucket
 
         before(async () => {
             nock.disableNetConnect();
-            const nocks = nock(`https://${BUCKET}.${ENDPOINT}:443`)
+            nock(`https://${BUCKET}.${ENDPOINT}:443`)
                 .head('/index.html')
                 .reply(200, new Buffer(''), { 'Content-Type': 'text/html' });
             req = await _fetch(uri, { method: 'HEAD' });
@@ -206,7 +201,7 @@ experiment('fetching s3: URIs with a base URI constrained to a particular bucket
 
         before(async () => {
             nock.disableNetConnect();
-            const nocks = nock(`https://${BUCKET}.${ENDPOINT}:443`)
+            nock(`https://${BUCKET}.${ENDPOINT}:443`)
                 .put('/poster')
                 .reply(function reply(uri, body, cb) {
                     (this.req.headers['x-amz-acl'] || []).forEach(v => acls.push(v));
@@ -250,7 +245,7 @@ experiment('fetching s3: URIs with a base URI constrained to a particular bucket
 
         before(async () => {
             nock.disableNetConnect();
-            const nocks = nock(`https://${BUCKET}.${ENDPOINT}:443`)
+            nock(`https://${BUCKET}.${ENDPOINT}:443`)
                 .put('/poster')
                 .reply(function reply(uri, body, cb) {
                     (this.req.headers['x-amz-acl'] || []).forEach(v => acls.push(v));
@@ -289,7 +284,7 @@ experiment('fetching s3: URIs with a base URI constrained to a particular bucket
 
         before(async () => {
             nock.disableNetConnect();
-            const nocks = nock(`https://${BUCKET}.${ENDPOINT}:443`)
+            nock(`https://${BUCKET}.${ENDPOINT}:443`)
                 .put('/poster')
                 .reply(function reply(uri, body, cb) {
                     (this.req.headers['x-amz-acl'] || []).forEach(v => acls.push(v));
@@ -327,7 +322,7 @@ experiment('fetching s3: URIs with a base URI constrained to a particular bucket
 
         before(async () => {
             nock.disableNetConnect();
-            const nocks = nock(`https://${BUCKET}.${ENDPOINT}:443`)
+            nock(`https://${BUCKET}.${ENDPOINT}:443`)
                 .delete('/poster')
                 .reply(204, new Buffer(''));
             req = await _fetch(uri, {
@@ -346,7 +341,7 @@ experiment('fetching s3: URIs with a base URI constrained to a particular bucket
     });
 
     test('http: URL still works', async () => {
-        const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+        nock('https://example.com').get('/').reply(200, 'hello');
         const req = await _fetch('https://example.com', {});
         expect(req.status).to.equal(200);
         const text = await req.text();

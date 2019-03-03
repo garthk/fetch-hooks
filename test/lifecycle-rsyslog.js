@@ -44,7 +44,7 @@ experiment('lifecycle event listener: rsyslog', () => {
         before(async () => {
             nock.cleanAll();
             nock.disableNetConnect();
-            const nocks = nock('https://example.com').get('/').reply(200, 'hello');
+            nock('https://example.com').get('/').reply(200, 'hello');
             const _fetch = hook(fetch, hooks.rsyslog({
                 target_host: address,
                 target_port: port,
@@ -123,7 +123,7 @@ experiment('lifecycle event listener: rsyslog', () => {
         before(async () => {
             nock.cleanAll();
             nock.disableNetConnect();
-            const nocks = nock('https://example.com').get('/?secret=xyzzy').reply(200, 'hello');
+            nock('https://example.com').get('/?secret=xyzzy').reply(200, 'hello');
             const _fetch = hook(fetch, hooks.rsyslog({
                 target_host: address,
                 target_port: port,
@@ -151,8 +151,6 @@ experiment('lifecycle event listener: rsyslog', () => {
 
     experiment('data after rsyslog', () => {
         let req;
-        let nowish;
-        let headerParts = [];
         let message = '';
 
         before(async () => {
@@ -163,7 +161,6 @@ experiment('lifecycle event listener: rsyslog', () => {
                 target_port: port,
                 appname: 'appname'
             }), hooks.data);
-            nowish = Date.now();
             messages.splice(0); // clears them
             req = await _fetch('data:text/ascii;base64,TUlORCBCTE9XTg==');
             await waitLongEnoughForDispatch();
@@ -190,9 +187,6 @@ experiment('lifecycle event listener: rsyslog', () => {
 
     experiment('data before rsyslog', () => {
         let req;
-        let nowish;
-        let headerParts = [];
-        let messageParts = [];
 
         before(async () => {
             nock.cleanAll();
@@ -202,7 +196,6 @@ experiment('lifecycle event listener: rsyslog', () => {
                 target_port: port,
                 appname: 'appname'
             }), hooks.data);
-            nowish = Date.now();
             messages.splice(0); // clears them
             req = await _fetch('data:text/ascii;base64,TUlORCBCTE9XTg==');
             await waitLongEnoughForDispatch();
