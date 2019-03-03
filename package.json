@@ -1,6 +1,6 @@
 {
   "name": "fetch-hooks",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "engines": {
     "node": ">=8.0.0"
   },
@@ -35,7 +35,7 @@
     "@types/node": "^8.10.18",
     "@types/tough-cookie": "^2.3.4",
     "code": "^5.1.2",
-    "lab": "^18.0.1",
+    "lab": "^18.0.2",
     "longjohn": "^0.2.12",
     "nock": "^9.1.6",
     "typescript": "^2.7.2"
