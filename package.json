@@ -28,7 +28,7 @@
     "mime": "^2.2.0",
     "node-fetch": "^2.1.1",
     "rsyslog": "^1.1.2",
-    "tough-cookie": "^3.0.0"
+    "tough-cookie": "^4.0.0"
   },
   "devDependencies": {
     "@types/nock": "^9.1.2",
