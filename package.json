@@ -33,7 +33,7 @@
   "devDependencies": {
     "@types/nock": "^9.1.2",
     "@types/node": "^8.10.18",
-    "@types/tough-cookie": "^2.3.4",
+    "@types/tough-cookie": "^4.0.0",
     "code": "^5.1.2",
     "lab": "^18.0.2",
     "longjohn": "^0.2.12",
